@@ -46,6 +46,29 @@ const productsSchema = new Schema({
     },
     category:{
         type:'String'
+    },
+    frameSpecs:{
+        lensWidth:{
+            type:'Number'
+        },
+        noseBridge:{
+            type:'Number'
+        },
+        templeArm:{
+            type:'Number'
+        },
+        size:{
+            type:'String'
+        },
+        color:{
+            type:'String'
+        },
+        shape:{
+            type:'String'
+        },
+        material:{
+            type:'String'
+        }
     }
     
 });

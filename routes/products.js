@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const Products = require('../models/product')
+const Category = require('../models/category')
 
 //COMMERCEJS TO MONGO CONVERTER!
 // router.post('/createproduct', async (req, res) => {
@@ -116,6 +117,32 @@ router.get('/allproducts', async (req, res) => {
     const allProducts = await Products.find()
     res.send(allProducts)
     
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).send('Some Internal Server Error')
+  }
+})
+
+// Get products by category id
+router.get('/bycategory/:id', async (req, res) => {
+  try {
+    const cat = await Category.findById(req.params.id)
+    if (!cat) return res.send([])
+
+    const normalize = (s) => (s || '').toString().toLowerCase()
+      .replace(/[\s\-_\/]+/g, '')
+      .replace(/[^a-z0-9]/g, '')
+
+    const variants = Array.from(new Set([
+      cat._id?.toString?.() || '',
+      cat.mainHeading || '',
+      (cat.mainHeading || '').toLowerCase(),
+      (cat.mainHeading || '').replace(' ', '').toLowerCase(),
+      normalize(cat.mainHeading)
+    ].filter(Boolean)))
+
+    const products = await Products.find({ category: { $in: variants } })
+    return res.send(products)
   } catch (error) {
     console.error(error.message)
     res.status(500).send('Some Internal Server Error')

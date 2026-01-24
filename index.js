@@ -20,6 +20,8 @@ app.use('/api/products', require('./routes/products'))
 app.use('/api/basicInfo', require('./routes/basicInfo'))
 app.use('/api/stripe', require('./routes/stripe'))
 app.use('/api/lenses', require('./routes/lens'))
+app.use('/api/orders', require('./routes/order'))
+app.use('/api/users', require('./routes/user'))
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
