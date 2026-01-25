@@ -149,12 +149,52 @@ router.get('/bycategory/:id', async (req, res) => {
   }
 })
 
+// By category slug (SEO-friendly)
+router.get('/bycategoryslug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params
+    const makeSlug = (s) => (s || '').toString().toLowerCase().replace(/[\s\-_\/]+/g, '-').replace(/[^a-z0-9-]/g, '')
+    const allCats = await Category.find()
+    const cat = (allCats || []).find((c) => makeSlug(c.mainHeading) === slug)
+    if (!cat) return res.send([])
+
+    const normalize = (s) => (s || '').toString().toLowerCase()
+      .replace(/[\s\-_\/]+/g, '')
+      .replace(/[^a-z0-9]/g, '')
+
+    const variants = Array.from(new Set([
+      cat._id?.toString?.() || '',
+      cat.mainHeading || '',
+      (cat.mainHeading || '').toLowerCase(),
+      (cat.mainHeading || '').replace(' ', '').toLowerCase(),
+      normalize(cat.mainHeading)
+    ].filter(Boolean)))
+
+    const products = await Products.find({ category: { $in: variants } })
+    return res.send(products)
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).send('Some Internal Server Error')
+  }
+})
+
 router.get('/singleproduct/:id', async (req, res) => {
   try {
 
     const allProducts = await Products.findById(req.params.id)
     res.send(allProducts)
 
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).send('Some Internal Server Error')
+  }
+})
+
+// Get products flagged for home preview
+router.get('/homepreview', async (_req, res) => {
+  try {
+    const featured = await Products.find({ homePreview: true })
+    res.send(featured)
   } catch (error) {
     console.error(error.message)
     res.status(500).send('Some Internal Server Error')

@@ -78,6 +78,18 @@ router.get('/getcategory/:id', async (req, res) => {
     const home = await Category.findById(req.params.id)
     res.send(home)
 })
+router.get('/getcategory/slug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params
+    const makeSlug = (s) => (s || '').toString().toLowerCase().replace(/[\s\-_\/]+/g, '-').replace(/[^a-z0-9-]/g, '')
+    const all = await Category.find()
+    const found = (all || []).find((c) => makeSlug(c.mainHeading) === slug)
+    if (!found) return res.status(404).send('Not found')
+    res.send(found)
+  } catch (e) {
+    console.error(e.message); res.status(500).send('Some Internal Server Error')
+  }
+})
 router.get('/getcategories', async (req, res) => {
     const home = await Category.find()
     res.send(home)
