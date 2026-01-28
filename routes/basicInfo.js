@@ -17,6 +17,7 @@ router.post('/createInfo', async (req, res) => {
             metaDescription: "Shop eyeglasses and sunglasses at great prices.",
             phoneNumber: "0300-0000000",
             deliveryCharges: 300,
+            standardCoatingPrice: 5.95,
             email: "support@glasses4u.com",
             officeAddress: "Karachi, Pakistan",
             footerDescription: "Quality eyewear at fair prices.",

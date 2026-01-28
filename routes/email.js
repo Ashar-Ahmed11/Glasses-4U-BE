@@ -3,97 +3,169 @@ const router = express.Router()
 const nodemailer = require('nodemailer')
 
 router.post('/', async (req, res) => {
-  const transport = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'memonfoodsandspices@gmail.com',
-      pass: 'ajikizflolrqazfw'
+  try {
+    const transport = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'memonfoodsandspices@gmail.com',
+        pass: 'ajikizflolrqazfw'
+      }
+    })
+
+    const {
+      email,
+      name,
+      phone,
+      address,
+      city,
+      country,
+      postalCode,
+      trackingId,
+      status = 'Pending Approval',
+      subtotal = 0,
+      deliveryCharges = 0,
+      total = 0,
+      items = [],
+    } = req.body || {}
+
+    const fmtCurrency = (n) => Number(n || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    const escape = (s) => String(s || '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]))
+    const fmtNum = (v, sign = true) => (typeof v === 'number' ? `${v >= 0 && sign ? '+' : ''}${v.toFixed(2)}` : 'None')
+    const fmtAxis = (v) => (typeof v === 'number' ? `${v}` : 'None')
+    const lensLabel = (lens) => {
+      if (!lens) return 'None'
+      const t = [lens.thickness ?? '', String(lens.title || '').toUpperCase()].join(' ').trim()
+      const p = lens.price ? ` + ${fmtCurrency(Number(lens.price))}` : ''
+      return `${t}${p}`
     }
-  });
 
-  const mailOption = {
-    from: "memonfoodsandspices@gmail.com",
-    to: req.body.email,
-    subject: "Memon Foods & Spices Order Confirmation",
-    html: `<div style="background-color:white; padding:30px; font-family:Arial, sans-serif;">
-      <div style="text-align:center;">
-        <img 
-          src="https://memon-foods-spices.web.app/static/media/nukhbaLogo1.ae30d010a9995c47203f.png" 
-          alt="Memon Foods & Spices Logo"
-          style="width:120px; height:auto; margin-bottom:20px;"
-        />
-      </div>
-      <h1 style="color:black; text-align:center;">Thanks For Shopping ${req.body.name}</h1>
-      <h3 style="padding:10px; color:black; text-align:center;">
-        ${req.body.name}, your order has been confirmed. For further queries, please contact us on WhatsApp.
-      </h3>
-      <h2 style="color:black; text-align:center; text-decoration:underline; margin-top:30px;">Order Summary</h2>
-      <table style="border:1px solid black; border-collapse:collapse; width:100%; margin-top:10px;">
-        <tr style="background-color:#f9f9f9;">
-          <th style="border:1px solid black; padding:8px; text-align:left; color:black;">Products</th>
-          <th style="border:1px solid black; padding:8px; text-align:right; color:black;">Total</th>
-        </tr>
-        <tr>
-          <td style="border:1px solid black; border-top:none; padding:8px; text-align:left; color:black;">${req.body.products}</td>
-          <td style="border:1px solid black; border-top:none; padding:8px; text-align:right; color:black;">PKR ${req.body.total}</td>
-        </tr>
-        <tr>
-          <td style="border:1px solid black; padding:8px; text-align:left; color:black;">Delivery Charges</td>
-          <td style="border:1px solid black; padding:8px; text-align:right; color:black;">PKR ${req.body.deliveryCharges}.00</td>
-        </tr>
-        <tr style="background-color:#f9f9f9;">
-          <th style="border:1px solid black; padding:8px; text-align:left; color:black;">Subtotal incl. Delivery Charges</th>
-          <th style="border:1px solid black; padding:8px; text-align:right; color:black;">${req.body.subtotal}</th>
-        </tr>
-      </table>
-      <h2 style="color:black; text-align:center; text-decoration:underline; margin-top:30px;">Delivery Details</h2>
+    const itemsHTML = (items || []).map((it) => {
+      const rx = it.prescription || null
+      const singlePD = !(rx?.prescription?.hasTwoPD)
+      const pdRight = singlePD ? (rx?.prescription?.pd ?? '') : (rx?.prescription?.pd?.right ?? '')
+      const pdLeft = singlePD ? '' : (rx?.prescription?.pd?.left ?? '')
+      const od = rx?.prescription?.od || {}
+      const os = rx?.prescription?.os || {}
+      const rxType = ({ distance: 'Distance', reading: 'Reading', bifocal: 'Bifocal with line', progressive: 'Progressive (no line)' }[rx?.rxType]) || '—'
+      const lensType = ({ clear: 'Clear Lenses', photochromic: 'Photochromic - Dark in Sun' }[rx?.lensType]) || '—'
+      return `
+      <tr>
+        <td style="padding:12px 0; border-bottom:1px solid #eee;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <img src="${escape(it.image || '')}" alt="" style="width:88px; height:52px; object-fit:cover; border-radius:6px; border:1px solid #eee;" />
+            <div style="flex:1; margin-left:12px;">
+              <div style="font-weight:600; color:#111;">${escape(it.name)}</div>
+              <div style="color:#666; font-size:12px;">
+                Unit: ${fmtCurrency(it.unitPrice || it.price)}
+                <span style="margin-left:8px;">Quantity: ${escape(it.quantity)}</span>
+              </div>
+            </div>
+            <div style="font-weight:600; color:#111;">${fmtCurrency((it.unitPrice || it.price) * (it.quantity || 1))}</div>
+          </div>
+          ${rx ? `
+            <div style="margin-top:10px; padding:10px; background:#f9fafb; border:1px solid #eee; border-radius:6px;">
+              <div style="font-weight:600; margin-bottom:6px; color:#111;">Prescription</div>
+              <div style="overflow:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                  <thead>
+                    <tr style="color:#6c757d;">
+                      <th style="text-align:left; padding:6px;"></th>
+                      <th style="text-align:center; padding:6px;">SPH</th>
+                      <th style="text-align:center; padding:6px;">CYL</th>
+                      <th style="text-align:center; padding:6px;">Axis</th>
+                      <th style="text-align:center; padding:6px;">Add</th>
+                      <th style="text-align:center; padding:6px;">PD</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th style="text-align:left; padding:6px; color:#6c757d;">OD-Right</th>
+                      <td style="text-align:center; padding:6px;">${fmtNum(od.sph)}</td>
+                      <td style="text-align:center; padding:6px;">${fmtNum(od.cyl)}</td>
+                      <td style="text-align:center; padding:6px;">${fmtAxis(od.axis)}</td>
+                      <td style="text-align:center; padding:6px;">${fmtNum(od.add)}</td>
+                      ${singlePD ? `<td style="text-align:center; padding:6px;" rowspan="2">${escape(pdRight)}</td>` : `<td style="text-align:center; padding:6px;">${escape(pdRight)}</td>`}
+                    </tr>
+                    <tr>
+                      <th style="text-align:left; padding:6px; color:#6c757d;">OS-Left</th>
+                      <td style="text-align:center; padding:6px;">${fmtNum(os.sph)}</td>
+                      <td style="text-align:center; padding:6px;">${fmtNum(os.cyl)}</td>
+                      <td style="text-align:center; padding:6px;">${fmtAxis(os.axis)}</td>
+                      <td style="text-align:center; padding:6px;">${fmtNum(os.add)}</td>
+                      ${!singlePD ? `<td style="text-align:center; padding:6px;">${escape(pdLeft)}</td>` : ``}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Rx Type:</span><span>${escape(rxType)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Lens Type:</span><span>${escape(lensType)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Lenses:</span><span>${escape(lensLabel(rx?.lens))}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Coating:</span><span>${escape(rx?.coating?.title?.toUpperCase?.() || 'None')}</span>
+                </div>
+              </div>
+            </div>
+          ` : ``}
+        </td>
+      </tr>`
+    }).join('')
 
-      <table style="border:1px solid black; border-collapse:collapse; width:100%; margin-top:10px;">
-  <tr style="background-color:#f9f9f9;">
-    <th style="border:1px solid black; padding:8px; text-align:left; color:black;">Information</th>
-    <th style="border:1px solid black; padding:8px; text-align:right; color:black;">Details</th>
-  </tr>
-
-  <tr>
-    <td style="border:1px solid black; border-top:none; padding:8px; text-align:left; color:black;">Name</td>
-    <td style="border:1px solid black; border-top:none; padding:8px; text-align:right; color:black;">${req.body.name}</td>
-  </tr>
-
-  <tr>
-    <td style="border:1px solid black; padding:8px; text-align:left; color:black;">Email</td>
-    <td style="border:1px solid black; padding:8px; text-align:right; color:black;">${req.body.email}</td>
-  </tr>
-
-  <tr>
-    <td style="border:1px solid black; padding:8px; text-align:left; color:black;">Phone</td>
-    <td style="border:1px solid black; padding:8px; text-align:right; color:black;">${req.body.phone}</td>
-  </tr>
-
-  <tr>
-    <td style="border:1px solid black; padding:8px; text-align:left; color:black;">Address</td>
-    <td style="border:1px solid black; padding:8px; text-align:right; color:black;">${req.body.address}</td>
-  </tr>
-
-  <tr>
-    <td style="border:1px solid black; padding:8px; text-align:left; color:black;">City</td>
-    <td style="border:1px solid black; padding:8px; text-align:right; color:black;">${req.body.city}</td>
-  </tr>
-</table>
-
-    </div>`
-  };
-
-  transport.sendMail(mailOption, function (err, info) {
-    if (err) {
-      console.log("Email error:", err);
-      return res.status(500).json({ success: false, message: "Email failed", error: err });
-    } else {
-      console.log("Email Sent: " + info.response);
-      return res.status(200).json({ success: true, message: "Email sent successfully", info: info.response });
+    const mailOption = {
+      from: "memonfoodsandspices@gmail.com",
+      to: email,
+      subject: "Glasses4U Order Confirmation",
+      html: `
+      <div style="background:#ffffff; padding:24px; font-family:Arial, sans-serif; color:#111;">
+        <div style="text-align:center; margin-bottom:10px;">
+          <img src="https://glasses-4u.com/static/media/logo.0789a273a4ae1dae1731.png" alt="Glasses4U" style="height:40px; display:inline-block;" />
+        </div>
+        <div style="text-align:center; margin-bottom:16px;">
+          <h1 style="margin:0; font-size:22px;">Thanks for your order, ${escape(name)}</h1>
+        </div>
+        <div style="margin-bottom:16px; font-size:14px; color:#444;">
+          <div><strong>Email:</strong> ${escape(email)}</div>
+          <div><strong>Phone:</strong> ${escape(phone)}</div>
+          <div><strong>Address:</strong> ${escape(address)}, ${escape(city)}, ${escape(country)} ${escape(postalCode || '')}</div>
+          ${trackingId ? `<div><strong>Tracking:</strong> ${escape(String(trackingId))}</div>` : ``}
+          <div><strong>Status:</strong> ${escape(status)}</div>
+        </div>
+        <h3 style="margin:16px 0 8px;">Items</h3>
+        <table style="width:100%; border-collapse:collapse;">
+          <tbody>
+            ${itemsHTML}
+          </tbody>
+        </table>
+        <div style="margin-top:16px; font-size:14px;">
+          <div style="display:flex; justify-content:flex-end; margin:2px 0;">Subtotal: ${fmtCurrency(subtotal)}</div>
+          <div style="display:flex; justify-content:flex-end; margin:2px 0;">Delivery: ${fmtCurrency(deliveryCharges)}</div>
+          <div style="display:flex; justify-content:flex-end; margin:6px 0; font-weight:700;">Total: ${fmtCurrency(total)}</div>
+        </div>
+        <div style="margin-top:24px; font-size:12px; color:#777;">
+          If you have any questions, reply to this email. We’re happy to help.
+        </div>
+      </div>`
     }
-  });
-});
 
-
+    transport.sendMail(mailOption, function (err, info) {
+      if (err) {
+        console.log("Email error:", err)
+        return res.status(500).json({ success: false, message: "Email failed", error: err })
+      } else {
+        console.log("Email Sent: " + info.response)
+        return res.status(200).json({ success: true, message: "Email sent successfully", info: info.response })
+      }
+    })
+  } catch (e) {
+    console.error('Email route error:', e)
+    return res.status(500).json({ success: false, message: 'Email failed', error: e?.message || e })
+  }
+})
 
 module.exports = router

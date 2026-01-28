@@ -24,6 +24,9 @@ const InfoSchema = new Schema({
     deliveryCharges: {
         type: 'Number',
     },
+    standardCoatingPrice: {
+        type: 'Number',
+    },
     email: {
         type: 'String',
     },
