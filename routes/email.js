@@ -4,16 +4,27 @@ const nodemailer = require('nodemailer')
 
 router.post('/', async (req, res) => {
   try {
+    // const transport = nodemailer.createTransport({
+    //   service: 'gmail',
+    //   auth: {
+    //     user: 'memonfoodsandspices@gmail.com',
+    //     pass: 'ajikizflolrqazfw'
+    //   }
+    // })
+
     const transport = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtpout.secureserver.net',
+      port: 465,          // SSL port
+      secure: true,       // true for port 465
       auth: {
-        user: 'memonfoodsandspices@gmail.com',
-        pass: 'ajikizflolrqazfw'
+        user: 'support@glasses-4u.com', // your GoDaddy email
+        pass: 'karachi2020'  // email password or app password
       }
-    })
+    });
 
     const {
       email,
+      customerEmail,
       name,
       phone,
       address,
@@ -32,6 +43,7 @@ router.post('/', async (req, res) => {
     const escape = (s) => String(s || '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]))
     const fmtNum = (v, sign = true) => (typeof v === 'number' ? `${v >= 0 && sign ? '+' : ''}${v.toFixed(2)}` : 'None')
     const fmtAxis = (v) => (typeof v === 'number' ? `${v}` : 'None')
+    const displayEmail = customerEmail || email
     const lensLabel = (lens) => {
       if (!lens) return 'None'
       const t = [lens.thickness ?? '', String(lens.title || '').toUpperCase()].join(' ').trim()
@@ -118,7 +130,7 @@ router.post('/', async (req, res) => {
     }).join('')
 
     const mailOption = {
-      from: "memonfoodsandspices@gmail.com",
+      from: "support@glasses-4u.com",
       to: email,
       subject: "Glasses4U Order Confirmation",
       html: `
@@ -130,7 +142,7 @@ router.post('/', async (req, res) => {
           <h1 style="margin:0; font-size:22px;">Thanks for your order, ${escape(name)}</h1>
         </div>
         <div style="margin-bottom:16px; font-size:14px; color:#444;">
-          <div><strong>Email:</strong> ${escape(email)}</div>
+          <div><strong>Email:</strong> ${escape(displayEmail)}</div>
           <div><strong>Phone:</strong> ${escape(phone)}</div>
           <div><strong>Address:</strong> ${escape(address)}, ${escape(city)}, ${escape(country)} ${escape(postalCode || '')}</div>
           ${trackingId ? `<div><strong>Tracking:</strong> ${escape(String(trackingId))}</div>` : ``}
