@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
       port: 465,          // SSL port
       secure: true,       // true for port 465
       auth: {
-        user: 'support@glasses-4u.com', // your GoDaddy email
+        user: 'team@glasses-4u.com', // your GoDaddy email
         pass: 'karachi2020'  // email password or app password
       }
     });
@@ -130,7 +130,7 @@ router.post('/', async (req, res) => {
     }).join('')
 
     const mailOption = {
-      from: "support@glasses-4u.com",
+      from: "team@glasses-4u.com",
       to: email,
       subject: "Glasses4U Order Confirmation",
       html: `
