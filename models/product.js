@@ -68,6 +68,10 @@ const productsSchema = new Schema({
         },
         material:{
             type:'String'
+        },
+        gender:{
+            type:'String',
+            enum:['male','female','unisex']
         }
     }
     
