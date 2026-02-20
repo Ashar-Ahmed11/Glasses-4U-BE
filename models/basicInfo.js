@@ -27,6 +27,30 @@ const InfoSchema = new Schema({
     standardCoatingPrice: {
         type: 'Number',
     },
+    premiumCoatingPrice: {
+        type: 'Number',
+    },
+    bluecutCoatingPrice: {
+        type: 'Number',
+    },
+    solidTintPrice: {
+        type: 'Number',
+    },
+    gradientTintPrice: {
+        type: 'Number',
+    },
+    mirrorTintPrice: { 
+        type: 'Number',
+    },
+    dualTintPrice: {
+        type: 'Number',
+    },
+    polarizedMirrorTintPrice: {
+        type: 'Number',
+    },
+    polarizedTintPrice: {
+        type: 'Number',
+    },
     email: {
         type: 'String',
     },

@@ -22,6 +22,7 @@ app.use('/api/stripe', require('./routes/stripe'))
 app.use('/api/lenses', require('./routes/lens'))
 app.use('/api/orders', require('./routes/order'))
 app.use('/api/users', require('./routes/user'))
+app.use('/api/posts', require('./routes/post'))
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
