@@ -153,9 +153,23 @@ router.get('/bycategory/:id', async (req, res) => {
 router.get('/bycategoryslug/:slug', async (req, res) => {
   try {
     const { slug } = req.params
-    const makeSlug = (s) => (s || '').toString().toLowerCase().replace(/[\s\-_\/]+/g, '-').replace(/[^a-z0-9-]/g, '')
+    const toHyphen = (s) => (s || '').toString().toLowerCase()
+      .replace(/[\s\-_\/]+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+    const toCompact = (s) => (s || '').toString().toLowerCase()
+      .replace(/[\s\-_\/]+/g, '')
+      .replace(/[^a-z0-9]/g, '')
+
     const allCats = await Category.find()
-    const cat = (allCats || []).find((c) => makeSlug(c.mainHeading) === slug)
+
+    const slugHyphen = toHyphen(slug)
+    const slugCompact = toCompact(slug)
+
+    const cat = (allCats || []).find((c) => {
+      const h = toHyphen(c.mainHeading)
+      const n = toCompact(c.mainHeading)
+      return h === slugHyphen || n === slugCompact
+    })
     if (!cat) return res.send([])
 
     const normalize = (s) => (s || '').toString().toLowerCase()

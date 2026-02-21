@@ -59,7 +59,8 @@ router.post('/', async (req, res) => {
       const od = rx?.prescription?.od || {}
       const os = rx?.prescription?.os || {}
       const rxType = ({ distance: 'Distance', reading: 'Reading', bifocal: 'Bifocal with line', progressive: 'Progressive (no line)' }[rx?.rxType]) || '—'
-      const lensType = ({ clear: 'Clear Lenses', photochromic: 'Photochromic - Dark in Sun' }[rx?.lensType]) || '—'
+      const lensType = ({ clear: 'Clear Lenses', photochromic: 'Photochromic - Dark in Sun', sunglasses: 'Sunglasses (Always Dark)' }[rx?.lensType]) || '—'
+      const tint = rx?.tint || null
       return `
       <tr>
         <td style="padding:12px 0; border-bottom:1px solid #eee;">
@@ -122,6 +123,21 @@ router.post('/', async (req, res) => {
                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
                   <span style="color:#6c757d;">Coating:</span><span>${escape(rx?.coating?.title?.toUpperCase?.() || 'None')}</span>
                 </div>
+                ${tint ? `
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Tint:</span>
+                  <span>
+                    ${escape(tint?.tintName || 'Sunglasses')}
+                    ${tint?.tintColorName ? ' - ' + escape(tint.tintColorName) : ''}
+                    ${tint?.tintIntensity ? ' (' + escape(tint.tintIntensity) + ')' : ''}
+                    ${typeof tint?.tintPrice === 'number' ? ' + ' + fmtCurrency(Number(tint.tintPrice)) : ''}
+                  </span>
+                </div>
+                ${tint?.tintImage ? `
+                <div style="padding:6px 0;">
+                  <img src="${escape(tint.tintImage)}" alt="${escape(tint?.tintColorName || 'Tint')}" style="width:36px; height:36px; border-radius:50%; border:1px solid #e5e7eb; object-fit:cover;" />
+                </div>` : ``}
+                ` : ``}
               </div>
             </div>
           ` : ``}

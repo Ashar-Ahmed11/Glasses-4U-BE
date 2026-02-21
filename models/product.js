@@ -10,6 +10,9 @@ const productsSchema = new Schema({
     price: {
         type: 'Number',
     },
+    salePrice: {
+        type: 'Number',
+    },
     priceAED: {
         type: 'Number',
     },
@@ -19,6 +22,9 @@ const productsSchema = new Schema({
                     type:"String"
                 },
                 price:{
+                    type:"Number"
+                },
+                salePrice:{
                     type:"Number"
                 }
             }
