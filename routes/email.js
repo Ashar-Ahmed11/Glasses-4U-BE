@@ -61,6 +61,7 @@ router.post('/', async (req, res) => {
       const rxType = ({ distance: 'Distance', reading: 'Reading', bifocal: 'Bifocal with line', progressive: 'Progressive (no line)' }[rx?.rxType]) || '—'
       const lensType = ({ clear: 'Clear Lenses', photochromic: 'Photochromic - Dark in Sun', sunglasses: 'Sunglasses (Always Dark)' }[rx?.lensType]) || '—'
       const tint = rx?.tint || null
+      const prism = rx?.prescription?.prism || rx?.prism || null
       return `
       <tr>
         <td style="padding:12px 0; border-bottom:1px solid #eee;">
@@ -137,6 +138,16 @@ router.post('/', async (req, res) => {
                 <div style="padding:6px 0;">
                   <img src="${escape(tint.tintImage)}" alt="${escape(tint?.tintColorName || 'Tint')}" style="width:36px; height:36px; border-radius:50%; border:1px solid #e5e7eb; object-fit:cover;" />
                 </div>` : ``}
+                ` : ``}
+                ${prism ? `
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Prism (Right OD):</span>
+                  <span>${escape([prism?.od?.value || 'None', prism?.od?.dir || ''].filter(Boolean).join(' '))}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed #e5e7eb;">
+                  <span style="color:#6c757d;">Prism (Left OS):</span>
+                  <span>${escape([prism?.os?.value || 'None', prism?.os?.dir || ''].filter(Boolean).join(' '))}</span>
+                </div>
                 ` : ``}
               </div>
             </div>

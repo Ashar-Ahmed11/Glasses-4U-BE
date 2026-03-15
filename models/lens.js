@@ -15,6 +15,9 @@ const LensSchema = new Schema({
     thickness: {
         type: 'Number',
     },
+    image: {
+        type: 'String',
+    },
     price: {
         type: 'Number',
     },
