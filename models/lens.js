@@ -21,6 +21,9 @@ const LensSchema = new Schema({
     price: {
         type: 'Number',
     },
+    salePrice: {
+        type: 'Number',
+    },
     lensType: {
         type: 'String',
     },
