@@ -24,6 +24,7 @@ app.use('/api/orders', require('./routes/order'))
 app.use('/api/users', require('./routes/user'))
 app.use('/api/posts', require('./routes/post'))
 app.use('/api/discount-codes', require('./routes/discountCodes'))
+app.use('/api/sub-categories', require('./routes/subCategory'))
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

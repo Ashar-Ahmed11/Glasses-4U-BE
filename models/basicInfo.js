@@ -27,11 +27,32 @@ const InfoSchema = new Schema({
     standardCoatingPrice: {
         type: 'Number',
     },
+    standardCoatingImage: {
+        type: 'String',
+    },
+    standardCoatingSalePrice: {
+        type: 'Number',
+    },
     premiumCoatingPrice: {
+        type: 'Number',
+    },
+    premiumCoatingImage: {
+        type: 'String',
+    },
+    premiumCoatingSalePrice: {
         type: 'Number',
     },
     bluecutCoatingPrice: {
         type: 'Number',
+    },
+    bluecutCoatingImage: {
+        type: 'String',
+    },
+    bluecutCoatingSalePrice: {
+        type: 'Number',
+    },
+    noCoatingsImage: {
+        type: 'String',
     },
     solidTintPrice: {
         type: 'Number',
@@ -68,8 +89,17 @@ const InfoSchema = new Schema({
     },
     twitterProfileLink:{
         type: 'String',
-    }
-
+    },
+    // Following Images below should be used in Step 3 - Lens Type
+    clearLensesImage: {
+        type: 'String',
+    },
+    photochromicLensesImage: {
+        type: 'String',
+    },
+    sunglassesImage: {
+        type: 'String',
+    },
 
 });
 

@@ -53,6 +53,9 @@ const productsSchema = new Schema({
     category:{
         type:'String'
     },
+    subcategories:[{
+        type:'String'
+    }],
     frameSpecs:{
         lensWidth:{
             type:'Number'

@@ -192,6 +192,31 @@ router.get('/bycategoryslug/:slug', async (req, res) => {
   }
 })
 
+// By subcategory slug (SEO-friendly)
+router.get('/bysubcategoryslug/:subSlug', async (req, res) => {
+  try {
+    const { subSlug } = req.params
+    const toHyphen = (s) => (s || '').toString().toLowerCase()
+      .replace(/[\s\-_\/]+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+    const toCompact = (s) => (s || '').toString().toLowerCase()
+      .replace(/[\s\-_\/]+/g, '')
+      .replace(/[^a-z0-9]/g, '')
+    const sH = toHyphen(subSlug)
+    const sC = toCompact(subSlug)
+
+    const all = await Products.find()
+    const filtered = (all || []).filter(p => {
+      const subs = Array.isArray(p?.subcategories) ? p.subcategories : []
+      return subs.some(sc => toHyphen(sc) === sH || toCompact(sc) === sC)
+    })
+    res.send(filtered)
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).send('Some Internal Server Error')
+  }
+})
+
 router.get('/singleproduct/:id', async (req, res) => {
   try {
 
