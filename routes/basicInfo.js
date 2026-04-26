@@ -16,6 +16,8 @@ router.post('/createInfo', async (req, res) => {
             metaTitle: "Glasses4U - Eyewear for Everyone",
             metaDescription: "Shop eyeglasses and sunglasses at great prices.",
             phoneNumber: "0300-0000000",
+            homepageImages: [],
+            homepageContent: {},
             deliveryCharges: 300,
             standardCoatingPrice: 5.95,
             premiumCoatingPrice: 7.95,
@@ -62,7 +64,7 @@ router.put('/editInfo', fetchAdmin, async (req, res) => {
             return res.status(402).send("Not allowed!")
         }
         
-        const editedInfo = await Info.findOneAndUpdate( {},{ $set: req.body }, { new: true })
+        const editedInfo = await Info.findOneAndUpdate( {},{ $set: req.body }, { new: true, strict: false })
 
         res.send(editedInfo)
   

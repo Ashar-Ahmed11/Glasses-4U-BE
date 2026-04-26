@@ -25,6 +25,8 @@ app.use('/api/users', require('./routes/user'))
 app.use('/api/posts', require('./routes/post'))
 app.use('/api/discount-codes', require('./routes/discountCodes'))
 app.use('/api/sub-categories', require('./routes/subCategory'))
+app.use('/api/newsletter', require('./routes/newsletter'))
+app.use('/api/subscribed-emails', require('./routes/subscribedEmail'))
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

@@ -21,6 +21,17 @@ const InfoSchema = new Schema({
         type: 'String',
 
     },
+    homepageContent:{
+        type: Schema.Types.Mixed,
+        default: {},
+      },
+    homepageImages:[
+        {
+            url:{
+                type:'String'
+            }
+        }
+    ],
     deliveryCharges: {
         type: 'Number',
     },
